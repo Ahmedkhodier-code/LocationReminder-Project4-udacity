@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -17,7 +16,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityAuthenticationBinding
 import com.udacity.project4.locationreminders.RemindersActivity
-import com.udacity.project4.locationreminders.reminderslist.ReminderListFragment
 
 /**
  * This class should be the starting point of the app, It asks the users to sign in / register, and redirects the
@@ -25,8 +23,9 @@ import com.udacity.project4.locationreminders.reminderslist.ReminderListFragment
  */
 const val TAG = "AuthenticationActivity"
 const val SIGN_IN_RESULT_CODE = 1002
-
+lateinit var intent:Intent
 class AuthenticationActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityAuthenticationBinding
     private val viewModel by viewModels<LoginViewModel>()
 
@@ -34,6 +33,7 @@ class AuthenticationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthenticationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        intent = Intent(this, RemindersActivity:: class.java)
 
 //         TODO: Implement the create account and sign in using FirebaseUI, use sign in using email and sign in using Google
         binding.loginBtn.setOnClickListener {
@@ -45,6 +45,7 @@ class AuthenticationActivity : AppCompatActivity() {
             when (authenticationState) {
                 LoginViewModel.AuthenticationState.AUTHENTICATED -> {
                     Log.e(TAG, "You are $authenticationState")
+                    startActivity(intent)
                 }
                 LoginViewModel.AuthenticationState.INVALID_AUTHENTICATION -> Snackbar.make(
                     binding.root,
@@ -88,7 +89,6 @@ class AuthenticationActivity : AppCompatActivity() {
                     TAG,
                     "Successfully signed in user " + "${FirebaseAuth.getInstance().currentUser?.displayName}!"
                 )
-                val intent = Intent(this, RemindersActivity::class.java)
                 startActivity(intent)
             } else {
                 Log.i(TAG, "Sign in unsuccessful ${response?.error?.errorCode}")
