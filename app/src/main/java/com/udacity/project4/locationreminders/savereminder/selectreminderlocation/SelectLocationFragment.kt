@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -24,6 +25,7 @@ import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
+import com.udacity.project4.locationreminders.savereminder.SaveReminderFragmentDirections
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
@@ -39,6 +41,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private lateinit var POI: PointOfInterest
     private var flag: Boolean = true
     private val TAG = SelectLocationFragment::class.java.simpleName
+    private val client by lazy { LocationServices.getFusedLocationProviderClient(requireActivity()) }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
@@ -64,7 +67,14 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
 //        TODO: call this function after the user confirms on the selected location
         binding.selected.setOnClickListener {
-            if (flag) Toast.makeText(requireContext(), "please select place", Toast.LENGTH_LONG).show() else onLocationSelected()
+            if (flag)
+                Toast.makeText(
+                    requireContext(),
+                    "Please Select Point which you want",
+                    Toast.LENGTH_LONG
+                ).show()
+            else
+                onLocationSelected()
         }
 
         return binding.root
@@ -74,10 +84,11 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         //        TODO: When the user confirms on the selected location,
         //         send back the selected location details to the view model
         //         and navigate back to the previous fragment to save the reminder and add the geofence
+        _viewModel.selectedPOI.value = POI
         _viewModel.longitude.value = POI.latLng.longitude
         _viewModel.latitude.value = POI.latLng.latitude
         _viewModel.reminderSelectedLocationStr.value = POI.name
-
+        findNavController().popBackStack()
     }
 
 
@@ -131,7 +142,14 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 // for ActivityCompat#requestPermissions for more details.
                 return
             }
+
             map.isMyLocationEnabled = true
+            client.lastLocation.addOnSuccessListener {
+                it?.let {
+                    val latLang = LatLng(it.latitude, it.longitude)
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLang, 15f))
+                }
+            }
         } else {
             ActivityCompat.requestPermissions(
                 requireActivity(),
@@ -144,11 +162,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         enableMyLocation()
-        val latitude = 37.422160
-        val longitude = -122.084270
-        val homeLatLng = LatLng(latitude, longitude)
-        val zoomLevel = 15f
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
         setMapLongClick(map)
         setPoiClick(map)
         setMapStyle(map)
@@ -177,13 +190,14 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     private fun setPoiClick(map: GoogleMap) {
         map.setOnPoiClickListener { poi ->
+            map.clear()
             val poiMarker = map.addMarker(
                 MarkerOptions()
                     .position(poi.latLng)
                     .title(poi.name)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
             )
             poiMarker?.showInfoWindow()
-            _viewModel.selectedPOI.value = poi
             POI = poi
             flag = false
         }
