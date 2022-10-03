@@ -27,10 +27,6 @@ class SaveReminderFragment : BaseFragment() {
         setDisplayHomeAsUpEnabled(true)
 
         binding.viewModel = _viewModel
-        binding.saveReminder.setOnClickListener {
-
-        }
-
         return binding.root
     }
 
