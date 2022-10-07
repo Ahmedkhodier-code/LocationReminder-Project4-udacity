@@ -26,6 +26,7 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
 
         // TODO: call this to start the JobIntentService to handle the geofencing transition events
         fun enqueueWork(context: Context, intent: Intent) {
+            Log.d("enqueueWork", "enqueueWork")
             enqueueWork(context, GeofenceTransitionsJobIntentService::class.java, JOB_ID, intent)
         }
     }
@@ -34,11 +35,8 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
         //TODO: handle the geofencing transition events and
         // send a notification to the user when he enters the geofence area
         //TODO call @sendNotification
-        val geofencingEvent = GeofencingEvent.fromIntent(intent)
-        val geofenceList: List<Geofence> =
-            geofencingEvent.triggeringGeofences
-        sendNotification(geofenceList)
-//        sendNotification(GeofencingEvent.fromIntent(intent).triggeringGeofences)
+        Log.d("onHandleWork", "onHandleWork")
+        sendNotification(GeofencingEvent.fromIntent(intent).triggeringGeofences)
     }
 
     //TODO: get the request id of the current geofence

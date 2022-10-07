@@ -26,6 +26,8 @@ import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSaveReminderBinding
+import com.udacity.project4.locationreminders.RemindersActivity
+import com.udacity.project4.locationreminders.RemindersActivity.Companion.ACTION_GEOFENCE_EVENT
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
@@ -119,7 +121,7 @@ class SaveReminderFragment : BaseFragment() {
         val geofencingClient = LocationServices.getGeofencingClient(requireActivity())
         geofencingClient.addGeofences(
             geofencingRequest,
-            pendingIntent
+            geofencePendingIntent
         ).addOnSuccessListener {
             _viewModel.validateAndSaveReminder(reminderItem)
         }.addOnFailureListener {
@@ -279,7 +281,5 @@ class SaveReminderFragment : BaseFragment() {
         private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
         private var BACKGROUND_LOCATION_PERMISSION_INDEX = 1
         const val GEOFENCE_RADIUS_IN_METERS = 100f
-        const val ACTION_GEOFENCE_EVENT = "ACTION_GEOFENCE_EVENT"
-
     }
 }

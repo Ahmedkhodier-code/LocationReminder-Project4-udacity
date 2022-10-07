@@ -23,22 +23,20 @@ import com.udacity.project4.locationreminders.RemindersActivity.Companion.ACTION
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.i("GeofenceBroadcastReceiver","onReceive")
+        Log.i(TAG, "onReceive")
 //TODO: implement the onReceive method to receive the geofencing events at the background
+        Log.i(TAG, intent.action.toString())
         if (intent.action == ACTION_GEOFENCE_EVENT) {
             val geofencingEvent = GeofencingEvent.fromIntent(intent)
-
             if (geofencingEvent.hasError()) {
                 val errorMessage = errorMessage(context, geofencingEvent.errorCode)
                 Log.e(TAG, errorMessage)
                 return
             }
-            if (geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-                Log.v(TAG, context.getString(R.string.geofence_entered))
-                GeofenceTransitionsJobIntentService.enqueueWork(context,intent)
-            }
+            GeofenceTransitionsJobIntentService.enqueueWork(context, intent)
         }
     }
+
     private fun errorMessage(context: Context, errorCode: Int): String {
         val resources = context.resources
         return when (errorCode) {
@@ -54,6 +52,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             else -> resources.getString(R.string.unknown_geofence_error)
         }
     }
+
     companion object {
         private const val TAG = "GeofenceBroadcastReceiver"
     }
