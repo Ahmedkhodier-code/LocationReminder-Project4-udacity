@@ -1,5 +1,8 @@
 package com.udacity.project4.base
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
@@ -7,6 +10,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
+import com.udacity.project4.locationreminders.ReminderDescriptionActivity
+import com.udacity.project4.locationreminders.reminderslist.ReminderListFragmentDirections
 
 abstract class BaseRecyclerViewAdapter<T>(private val callback: ((item: T) -> Unit)? = null) :
     RecyclerView.Adapter<DataBindingViewHolder<T>>() {
@@ -16,7 +21,7 @@ abstract class BaseRecyclerViewAdapter<T>(private val callback: ((item: T) -> Un
     /**
      * Returns the _items data
      */
-    private val items: List<T>?
+    private val items: List<T>
         get() = this._items
 
     override fun getItemCount() = _items.size
@@ -40,13 +45,14 @@ abstract class BaseRecyclerViewAdapter<T>(private val callback: ((item: T) -> Un
         }
     }
 
-    fun getItem(position: Int) = _items[position]
+    private fun getItem(position: Int) = _items[position]
 
     /**
      * Adds data to the actual Dataset
      *
      * @param items to be merged
      */
+    @SuppressLint("NotifyDataSetChanged")
     fun addData(items: List<T>) {
         _items.addAll(items)
         notifyDataSetChanged()
@@ -55,6 +61,7 @@ abstract class BaseRecyclerViewAdapter<T>(private val callback: ((item: T) -> Un
     /**
      * Clears the _items data
      */
+    @SuppressLint("NotifyDataSetChanged")
     fun clear() {
         _items.clear()
         notifyDataSetChanged()

@@ -26,12 +26,12 @@ import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSaveReminderBinding
-import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.RemindersActivity.Companion.ACTION_GEOFENCE_EVENT
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
+
 
 class SaveReminderFragment : BaseFragment() {
 
@@ -94,15 +94,9 @@ class SaveReminderFragment : BaseFragment() {
     @SuppressLint("MissingPermission")
     private fun startGeofencing(reminderItem: ReminderDataItem) {
         Log.d(TAG, "Start geofencing monitoring call")
-        val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
+        val intent = Intent(requireActivity(), GeofenceBroadcastReceiver::class.java)
         intent.action = ACTION_GEOFENCE_EVENT
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            requireContext(),
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val  mGeofencePendingIntent = PendingIntent.getBroadcast(requireActivity(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         val geofence = Geofence.Builder().setRequestId(reminderItem.id).setCircularRegion(
                 reminderItem.latitude!!,
@@ -121,7 +115,7 @@ class SaveReminderFragment : BaseFragment() {
         val geofencingClient = LocationServices.getGeofencingClient(requireActivity())
         geofencingClient.addGeofences(
             geofencingRequest,
-            geofencePendingIntent
+            mGeofencePendingIntent
         ).addOnSuccessListener {
             _viewModel.validateAndSaveReminder(reminderItem)
         }.addOnFailureListener {

@@ -53,8 +53,7 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
                 if (result is Result.Success<ReminderDTO>) {
                     val reminderDTO = result.data
                     //send a notification to the user with the reminder details
-                    sendNotification(
-                        this@GeofenceTransitionsJobIntentService, ReminderDataItem(
+                    sendNotification(this@GeofenceTransitionsJobIntentService, ReminderDataItem(
                             reminderDTO.title,
                             reminderDTO.description,
                             reminderDTO.location,
