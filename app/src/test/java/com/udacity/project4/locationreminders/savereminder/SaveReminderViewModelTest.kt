@@ -22,7 +22,7 @@ import com.udacity.project4.locationreminders.getOrAwaitValue
 @RunWith(AndroidJUnit4::class)
 class SaveReminderViewModelTest {
 
-    //DONE: provide testing to the SaveReminderView and its live data objects
+    //TODO: provide testing to the SaveReminderView and its live data objects
 
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
