@@ -128,6 +128,6 @@ class ReminderListFragmentTest {
         val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
 
         //Then - The snack bar is shown with the returned error message in the Error Result
-        onView(withText("Error found")).check(matches(isDisplayed()))
+        onView(withText("Error Reminder not found!")).check(matches(isDisplayed()))
     }
 }

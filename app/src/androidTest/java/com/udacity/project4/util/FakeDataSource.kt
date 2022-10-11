@@ -14,7 +14,7 @@ class FakeDataSource(var tasks: MutableList<ReminderDTO>? = mutableListOf()) : R
 
     override suspend fun getReminders(): Result<List<ReminderDTO>> {
         if (shouldReturnError) {
-            return Result.Error("Error found")
+            return Result.Error("Error Reminder not found!")
         }
         tasks?.let { return Result.Success(ArrayList(it)) }
         return Result.Error("Reminders not found.")
