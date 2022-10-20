@@ -2,18 +2,22 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 
 
 import android.Manifest
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.*
 import androidx.databinding.DataBindingUtil
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -23,20 +27,18 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
-import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
-import com.udacity.project4.locationreminders.savereminder.SaveReminderFragmentDirections
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 import java.util.*
+
 
 class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
-    private val REQUEST_LOCATION_PERMISSION = 1
     private lateinit var map: GoogleMap
     private lateinit var POI: PointOfInterest
     private var flag: Boolean = true
@@ -52,7 +54,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
         binding.viewModel = _viewModel
         binding.lifecycleOwner = this
-
 
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
@@ -117,32 +118,17 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         else -> super.onOptionsItemSelected(item)
     }
 
+    @Suppress("DEPRECATED_IDENTITY_EQUALS")
     private fun isPermissionGranted(): Boolean {
-        return ContextCompat.checkSelfPermission(
+        return checkSelfPermission(
             requireContext(),
-            Manifest.permission.ACCESS_FINE_LOCATION
+            ACCESS_FINE_LOCATION
         ) === PackageManager.PERMISSION_GRANTED
     }
 
+    @SuppressLint("MissingPermission")
     private fun enableMyLocation() {
         if (isPermissionGranted()) {
-            if (ActivityCompat.checkSelfPermission(
-                    requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return
-            }
-
             map.isMyLocationEnabled = true
             client.lastLocation.addOnSuccessListener {
                 it?.let {
@@ -151,13 +137,36 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 }
             }
         } else {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                REQUEST_LOCATION_PERMISSION
-            )
+            requestPermissionLauncher.launch(ACCESS_FINE_LOCATION)
         }
     }
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                // PERMISSION GRANTED
+                Log.i("requestPermissionLauncher", "isGranted$isGranted")
+                enableMyLocation()
+            } else {
+                // PERMISSION NOT GRANTED
+                val builder = AlertDialog.Builder(requireContext())
+                builder.setMessage("The application must have permission to find location");
+                builder.setTitle("Location");
+                builder.setCancelable(true)
+                builder.setPositiveButton("Yes") { _, _ ->
+                    // When the user click yes button then app will show permission
+                    enableMyLocation()
+                }
+                builder.setNegativeButton("No") {
+                    // If user click no then dialog box is canceled.
+                        dialog, _ ->
+                    dialog.cancel()
+                    findNavController().popBackStack()
+                }
+                val alertDialog = builder.create()
+                alertDialog.show()
+            }
+        }
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
@@ -176,6 +185,11 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 latLng.latitude,
                 latLng.longitude
             )
+            POI = PointOfInterest(
+                latLng,
+                getString(R.string.dropped_pin),
+                getString(R.string.dropped_pin)
+            )
             map.clear()
             map.addMarker(
                 MarkerOptions()
@@ -185,6 +199,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
 
             )
+            flag = false
         }
     }
 
