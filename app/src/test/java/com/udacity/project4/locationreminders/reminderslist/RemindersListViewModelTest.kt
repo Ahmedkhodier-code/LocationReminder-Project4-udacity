@@ -31,23 +31,17 @@ class RemindersListViewModelTest {
     val list = listOf<ReminderDTO>(
         ReminderDTO("title", "description", "location", 0.0, 0.0),
         ReminderDTO(
-            "title",
-            "description",
-            "location",
+            "title", "description", "location",
             (-360..360).random().toDouble(),
             (-360..360).random().toDouble()
         ),
         ReminderDTO(
-            "title",
-            "description",
-            "location",
+            "title", "description", "location",
             (-360..360).random().toDouble(),
             (-360..360).random().toDouble()
         ),
         ReminderDTO(
-            "title",
-            "description",
-            "location",
+            "title", "description", "location",
             (-360..360).random().toDouble(),
             (-360..360).random().toDouble()
         )
@@ -67,8 +61,10 @@ class RemindersListViewModelTest {
     @Test
     fun getRemindersList() {
         val remindersList = mutableListOf(reminder1, reminder2, reminder3)
-        fakeDataSource = FakeDataSource(remindersList)
-        reminderListViewModel = RemindersListViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
+        fakeDataSource = FakeDataSource()
+        fakeDataSource.setTasks(remindersList)
+        reminderListViewModel =
+            RemindersListViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
         reminderListViewModel.loadReminders()
         Assert.assertThat(
             reminderListViewModel.remindersList.getOrAwaitValue(),
@@ -82,24 +78,49 @@ class RemindersListViewModelTest {
 
     @Test
     fun check_loading() {
-        fakeDataSource = FakeDataSource(mutableListOf())
-        reminderListViewModel = RemindersListViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
+        fakeDataSource = FakeDataSource()
+        fakeDataSource.setTasks(mutableListOf())
+        reminderListViewModel =
+            RemindersListViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
         mainCoroutineRule.pauseDispatcher()
         reminderListViewModel.loadReminders()
         Assert.assertThat(
             reminderListViewModel.showLoading.getOrAwaitValue(),
             CoreMatchers.`is`(true)
         )
+        mainCoroutineRule.resumeDispatcher()
+        Assert.assertThat(
+            reminderListViewModel.showLoading.getOrAwaitValue(),
+            CoreMatchers.`is`(false)
+        )
     }
 
     @Test
     fun returnError() {
-        fakeDataSource = FakeDataSource(null)
-        reminderListViewModel = RemindersListViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
+        fakeDataSource = FakeDataSource()
+        fakeDataSource.setShouldReturnError(true)
+        reminderListViewModel =
+            RemindersListViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
         reminderListViewModel.loadReminders()
         Assert.assertThat(
             reminderListViewModel.showSnackBar.getOrAwaitValue(),
             CoreMatchers.`is`("No reminders found")
         )
+    }
+
+    @Test
+    fun check_showSnackBar() {
+        fakeDataSource = FakeDataSource()
+        reminderListViewModel =
+            RemindersListViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
+        mainCoroutineRule.pauseDispatcher()
+        fakeDataSource.setShouldReturnError(true)
+        reminderListViewModel.loadReminders()
+        mainCoroutineRule.resumeDispatcher()
+        Assert.assertThat(
+            reminderListViewModel.showSnackBar.getOrAwaitValue(),
+            CoreMatchers.`is`("No reminders found")
+        )
+        //Error getting reminders
     }
 }

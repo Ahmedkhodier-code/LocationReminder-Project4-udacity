@@ -53,50 +53,36 @@ class ReminderListFragmentTest {
 
     @Test
     fun clickOnAddReminderButton_navigateToAddReminderFragment() {
-
         // Given - Reminder list fragment is displayed with the fab
         val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
-
         val navController = mock(NavController::class.java)
-
         scenario.onFragment {
             Navigation.setViewNavController(it.requireView(), navController)
         }
-
         // When - performing a click to add reminder fab
         onView(withId(R.id.addReminderFAB)).perform(click())
-
         // Then - Check navigation to SaveReminderFragment called or not
         verify(navController).navigate(ReminderListFragmentDirections.toSaveReminder())
-
     }
-
 
     @Test
     fun testTheDataDisplayed() = runBlockingTest {
-
         // Given - on the reminder list screen with 3 reminders
         val reminder1 =
             ReminderDTO(
-                "title1",
-                "description",
-                "location1",
+                "title1", "description", "location1",
                 (-360..360).random().toDouble(),
                 (-360..360).random().toDouble()
             )
         val reminder2 =
             ReminderDTO(
-                "title2",
-                "description",
-                "location2",
+                "title2", "description", "location2",
                 (-360..360).random().toDouble(),
                 (-360..360).random().toDouble()
             )
         val reminder3 =
             ReminderDTO(
-                "title3",
-                "description",
-                "location3",
+                "title3", "description", "location3",
                 (-360..360).random().toDouble(),
                 (-360..360).random().toDouble()
             )
@@ -114,7 +100,6 @@ class ReminderListFragmentTest {
         onView(withText(reminder2.location)).check(matches(isDisplayed()))
         onView(withText(reminder3.title)).check(matches(isDisplayed()))
         onView(withText(reminder3.location)).check(matches(isDisplayed()))
-
     }
 
     @Test

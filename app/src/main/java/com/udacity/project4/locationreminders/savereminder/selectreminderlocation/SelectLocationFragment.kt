@@ -148,6 +148,11 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 Log.i("requestPermissionLauncher", "isGranted$isGranted")
                 enableMyLocation()
             } else {
+                Toast.makeText(
+                    requireContext(),
+                    "The application must have permission to find location",
+                    Toast.LENGTH_LONG
+                ).show()
                 // PERMISSION NOT GRANTED
                 val builder = AlertDialog.Builder(requireContext())
                 builder.setMessage("The application must have permission to find location");

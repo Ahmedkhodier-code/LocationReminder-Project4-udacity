@@ -30,7 +30,13 @@ class SaveReminderViewModelTest {
     @get:Rule
     var mainCoroutineRule = MainCoroutineRule()
 
-    val list = listOf<ReminderDataItem>(ReminderDataItem("title", "description","location",(-360..360).random().toDouble(),(-360..360).random().toDouble()))
+    val list = listOf<ReminderDataItem>(
+        ReminderDataItem(
+            "title", "description", "location",
+            (-360..360).random().toDouble(),
+            (-360..360).random().toDouble()
+        )
+    )
     private val firstReminder = list[0]
 
     private lateinit var fakeDataSource: FakeDataSource
@@ -45,19 +51,29 @@ class SaveReminderViewModelTest {
     @Test
     fun check_loading() {
         fakeDataSource = FakeDataSource()
-        saveReminderViewModel = SaveReminderViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
+        fakeDataSource.setTasks(mutableListOf())
+        saveReminderViewModel =
+        SaveReminderViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
         mainCoroutineRule.pauseDispatcher()
         saveReminderViewModel.validateAndSaveReminder(firstReminder)
-        Assert.assertThat(saveReminderViewModel.showLoading.getOrAwaitValue(), CoreMatchers.`is`(true))
+        Assert.assertThat(
+            saveReminderViewModel.showLoading.getOrAwaitValue(),
+            CoreMatchers.`is`(true)
+        )
     }
 
     @Test
     fun returnError() {
-        fakeDataSource = FakeDataSource(null)
-        saveReminderViewModel = SaveReminderViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
+        fakeDataSource = FakeDataSource()
+        fakeDataSource.setShouldReturnError(true)
+        saveReminderViewModel =
+            SaveReminderViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
         firstReminder.title = null
         saveReminderViewModel.validateAndSaveReminder(firstReminder)
-        Assert.assertThat(saveReminderViewModel.showSnackBarInt.getOrAwaitValue(), CoreMatchers.`is`(R.string.err_enter_title))
+        Assert.assertThat(
+            saveReminderViewModel.showSnackBarInt.getOrAwaitValue(),
+            CoreMatchers.`is`(R.string.err_enter_title)
+        )
     }
 
 }
