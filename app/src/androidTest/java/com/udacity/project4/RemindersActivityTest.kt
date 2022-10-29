@@ -41,10 +41,11 @@ import org.koin.test.get
 @LargeTest
 //END TO END test to black box test the app
 class RemindersActivityTest :
-    AutoCloseKoinTest() {
-    // Extended Koin Test - embed autoclose @after method to close Koin after every test
+    AutoCloseKoinTest() {// Extended Koin Test - embed autoclose @after method to close Koin after every test
+
     @get:Rule
-    var Rule = ActivityTestRule<RemindersActivity>(RemindersActivity::class.java)
+    var mActivityRule = ActivityTestRule<RemindersActivity>(RemindersActivity::class.java)
+
     private lateinit var repository: ReminderDataSource
     private lateinit var appContext: Application
     private val dataBindingIdlingResource = DataBindingIdlingResource()
@@ -59,22 +60,35 @@ class RemindersActivityTest :
         appContext = getApplicationContext()
         val myModule = module {
             viewModel {
-                RemindersListViewModel(appContext, get() as ReminderDataSource)
+                RemindersListViewModel(
+                    appContext,
+                    get() as ReminderDataSource
+                )
             }
             single {
-                SaveReminderViewModel(appContext, get() as ReminderDataSource)
+                SaveReminderViewModel(
+                    appContext,
+                    get() as ReminderDataSource
+                )
             }
             single { RemindersLocalRepository(get()) as ReminderDataSource }
             single { LocalDB.createRemindersDao(appContext) }
         }
+        //declare a new koin module
         startKoin {
             modules(listOf(myModule))
         }
+        //Get our real repository
         repository = get()
+
+        //clear the data to start fresh
         runBlocking {
             repository.deleteAllReminders()
         }
     }
+
+
+//    TODO: add End to End testing to the app
 
     @Before
     fun registerIdlingResource() {
@@ -90,19 +104,41 @@ class RemindersActivityTest :
 
     @Test
     fun addNewReminder() {
-        val scenario = ActivityScenario.launch(RemindersActivity::class.java)
-        dataBindingIdlingResource.monitorActivity(scenario)
+        val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
+
+        // Click on add new reminder button
         onView(withId(R.id.addReminderFAB)).perform(click())
+
         onView(withId(R.id.selectLocation)).perform(click())
-        onView(withId(R.id.map)).perform(click())
+
+        onView(withId(R.id.map)).perform(longClick())
+
         onView(withId(R.id.selected)).perform(click())
-        onView(withId(R.id.reminderTitle)).perform(typeText("Title"))
-        onView(withId(R.id.reminderDescription)).perform(typeText("Description"))
+
+        onView(withId(R.id.reminderTitle)).perform(typeText("Reminder Title"))
+
+        onView(withId(R.id.reminderDescription)).perform(typeText("Reminder Description"))
+
         pressBack()
+
         onView(withId(R.id.saveReminder)).perform(click())
-        onView(withText("Title")).check(matches(isDisplayed()))
-        onView(withText(R.string.reminder_saved)).inRoot(withDecorView(not(`is`(Rule.activity.window.decorView))))
-            .check(matches(isDisplayed()))
-        scenario.close()
+
+        onView(withText("Reminder Title")).check(matches(isDisplayed()))
+
+        onView(withText(R.string.reminder_saved)).inRoot(
+            withDecorView(
+                not(
+                    `is`(
+                        mActivityRule.activity.window.decorView
+                    )
+                )
+            )
+        ).check(matches(isDisplayed()))
+
+//    onView(withText(R.string.reminder_saved)).inRoot(ToastMatcher()).check(matches(isDisplayed()))
+
+        activityScenario.close()
+
     }
 }
