@@ -104,7 +104,7 @@ class RemindersListViewModelTest {
         reminderListViewModel.loadReminders()
         Assert.assertThat(
             reminderListViewModel.showSnackBar.getOrAwaitValue(),
-            CoreMatchers.`is`("No reminders found")
+            CoreMatchers.`is`("Location reminders cannot retrieve due to exception occurs")
         )
     }
 
@@ -119,7 +119,7 @@ class RemindersListViewModelTest {
         mainCoroutineRule.resumeDispatcher()
         Assert.assertThat(
             reminderListViewModel.showSnackBar.getOrAwaitValue(),
-            CoreMatchers.`is`("No reminders found")
+            CoreMatchers.`is`("Location reminders cannot retrieve due to exception occurs")
         )
         //Error getting reminders
     }
